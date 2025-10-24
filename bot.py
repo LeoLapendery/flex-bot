@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import asyncio
 from datetime import datetime, timedelta
+import os
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -124,4 +125,4 @@ async def on_ready():
     await bot.tree.sync()
     print(f"✅ Connecté en tant que {bot.user}")
 
-bot.run("DISCORD_TOKEN")
+bot.run(os.environ["DISCORD_TOKEN"])
