@@ -9,8 +9,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 active_flex_sessions = []
 
-FLEX_DURATION_HOURS = 6  # Durée normale
-EMPTY_TIMEOUT_MINUTES = 10  # Durée avant fermeture d'une flex vide
+FLEX_DURATION_HOURS = 6
+EMPTY_TIMEOUT_MINUTES = 10
 
 
 class FlexView(discord.ui.View):
@@ -20,7 +20,7 @@ class FlexView(discord.ui.View):
         self.active = True
         self.role_mention = role_mention
         self.creation_time = datetime.utcnow()
-        self.empty_task = None  # Task pour la fermeture si vide
+        self.empty_task = None
 
     async def update_message(self):
         if hasattr(self, "message"):
@@ -62,7 +62,6 @@ class FlexView(discord.ui.View):
         await interaction.response.defer()
         await self.update_message()
 
-        # Annule la fermeture si elle était prévue
         if self.empty_task:
             self.empty_task.cancel()
             self.empty_task = None
@@ -111,7 +110,6 @@ async def flex(interaction: discord.Interaction):
     view.message = await interaction.original_response()
     active_flex_sessions.append(view)
 
-    # Expiration normale après 6h
     bot.loop.create_task(expire_session_timer(view))
 
 
