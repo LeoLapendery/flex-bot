@@ -108,10 +108,10 @@ class FlexView(discord.ui.View):
 
         if self.expired:
             color = discord.Color.greyple()
-            status = "⏱️ Appel terminé (expiré)"
+            status = "⏱️ Appel de la flex expiré..."
         elif full:
             color = discord.Color.green()
-            status = "✅ Groupe complet, GO !"
+            status = "✅ Groupe complet"
         else:
             color = discord.Color.blurple()
             status = "🔎 En attente de joueurs…"
@@ -122,7 +122,7 @@ class FlexView(discord.ui.View):
         )
 
         embed = discord.Embed(
-            title="🎮 Appel au Flex — League of Legends",
+            title="🎮 C'est l'heure de FLEX",
             description=self.user_message or None,
             color=color,
         )
@@ -140,7 +140,7 @@ class FlexView(discord.ui.View):
             value="Expiré" if self.expired else f"<t:{expires_ts}:R> (<t:{expires_ts}:f>)",
             inline=False,
         )
-        embed.set_footer(text="✅ pour rejoindre • ❌ pour te retirer (ou annuler ta présence)")
+        embed.set_footer(text="✅ pour rejoindre • ❌ pour partir")
         embed.timestamp = self.created_at
         return embed
 
@@ -160,11 +160,11 @@ class FlexView(discord.ui.View):
     @discord.ui.button(label="Je suis chaud", style=discord.ButtonStyle.success, custom_id=JOIN_CUSTOM_ID, emoji="✅")
     async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.expired:
-            await interaction.response.send_message("⏱️ Cet appel au flex est terminé.", ephemeral=True)
+            await interaction.response.send_message("⏱️ Cet appel à la flex est terminé.", ephemeral=True)
             return
 
         if interaction.user.id in self.participant_ids:
-            await interaction.response.send_message("😄 T'es déjà dans la liste !", ephemeral=True)
+            await interaction.response.send_message("T'es déjà dans la liste !", ephemeral=True)
             return
 
         if len(self.participant_ids) >= self.max_players:
@@ -181,7 +181,7 @@ class FlexView(discord.ui.View):
     @discord.ui.button(label="Pas dispo", style=discord.ButtonStyle.danger, custom_id=LEAVE_CUSTOM_ID, emoji="❌")
     async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id not in self.participant_ids:
-            await interaction.response.send_message("Tu n'étais pas dans la liste, pas de souci 👍", ephemeral=True)
+            await interaction.response.send_message("T'es pas dans la liste...", ephemeral=True)
             return
 
         self.participant_ids.remove(interaction.user.id)
