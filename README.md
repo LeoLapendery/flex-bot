@@ -2,16 +2,18 @@
 
 Bot Discord mono-commande pour organiser un flex à 5 sur League of Legends.
 
-`/flex [message] [duree_heures]` :
+`/flex [message] [heure]` :
 - ping le rôle `@FLEX`
 - poste un embed avec 2 boutons : **✅ Je suis chaud** / **❌ Pas dispo**
 - un clic sur ✅ ajoute ton pseudo à la liste (max 5, bouton grisé une fois complet)
 - un clic sur ❌ te retire de la liste si tu y étais (sinon ne fait rien)
 - la session reste active en mémoire **et** sur disque (`data/flex_sessions.json`),
   donc elle survit à un redémarrage du bot
-- elle expire automatiquement après un délai configurable (6h par défaut, ou la
-  valeur passée dans `duree_heures`) : les boutons se désactivent et le message
-  affiche "Expiré"
+- `heure` (optionnel, ex. `21h`, `21h30`, `21:30`) : affiche « Heure : 21h30 »
+  dans la card, uniquement si elle est renseignée
+- elle expire automatiquement après un délai configurable (`FLEX_TTL_HOURS`,
+  6h par défaut, non modifiable par commande) : les boutons se désactivent et
+  le message affiche "Expiré"
 
 ## Ce qui a changé par rapport à l'ancienne version
 

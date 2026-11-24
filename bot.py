@@ -4,11 +4,12 @@ Commande /flex :
   - ping le rôle @FLEX (nom configurable)
   - affiche un embed avec 2 boutons (rejoindre / se retirer)
   - garde la liste des participants en mémoire + sur disque (data/flex_sessions.json)
-  - expire automatiquement après FLEX_TTL_HOURS (par défaut 6h), ou après la
-    durée passée en paramètre de la commande
+  - expire automatiquement après FLEX_TTL_HOURS (par défaut 6h)
+  - heure de début optionnelle (paramètre `heure`), affichée dans la card
 """
 import logging
 import os
+import re
 from typing import Optional
 
 import discord
@@ -53,12 +54,28 @@ async def on_guild_join(guild: discord.Guild):
         await guild.leave()
 
 
+_TIME_RE = re.compile(r"^\s*(\d{1,2})\s*(?:[hH:]\s*(\d{1,2})?)?\s*$")
+
+
+def parse_start_time(raw: str) -> Optional[str]:
+    """Normalise une heure saisie ('21h', '21h30', '21:30', '9h5') en 'XXhXX'.
+    Retourne None si le format est invalide."""
+    match = _TIME_RE.match(raw)
+    if not match:
+        return None
+    hours = int(match.group(1))
+    minutes = int(match.group(2)) if match.group(2) else 0
+    if hours > 23 or minutes > 59:
+        return None
+    return f"{hours:02d}h{minutes:02d}"
+
+
 @bot.tree.command(name="flex", description="Lance un appel au flex à 5 et ping le rôle @FLEX")
 @app_commands.describe(
-    message="Message optionnel à afficher (ex: 'ce soir 21h')",
-    duree_heures="Durée avant expiration de l'appel, en heures (défaut: configuré sur le bot)",
+    message="Message optionnel à afficher (ex: 'on push gold')",
+    heure="Heure de début optionnelle (ex: 21h, 21h30, 21:30)",
 )
-async def flex(interaction: discord.Interaction, message: str = "", duree_heures: Optional[float] = None):
+async def flex(interaction: discord.Interaction, message: str = "", heure: Optional[str] = None):
     guild = interaction.guild
     if guild is None:
         await interaction.response.send_message("⚠️ Cette commande ne fonctionne que sur un serveur.", ephemeral=True)
@@ -74,14 +91,23 @@ async def flex(interaction: discord.Interaction, message: str = "", duree_heures
         )
         return
 
-    ttl_hours = duree_heures if duree_heures and duree_heures > 0 else DEFAULT_TTL_HOURS
+    start_time = None
+    if heure and heure.strip():
+        start_time = parse_start_time(heure)
+        if start_time is None:
+            await interaction.response.send_message(
+                "⚠️ Heure invalide. Utilise un format comme `21h`, `21h30` ou `21:30`.",
+                ephemeral=True,
+            )
+            return
 
     view = FlexView(
         creator_id=interaction.user.id,
         role_id=role.id,
         user_message=message,
+        start_time=start_time,
         max_players=MAX_PLAYERS,
-        ttl_hours=ttl_hours,
+        ttl_hours=DEFAULT_TTL_HOURS,
         persist_callback=persist_sessions,
     )
 

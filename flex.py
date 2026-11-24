@@ -24,6 +24,7 @@ class FlexView(discord.ui.View):
         creator_id: int,
         role_id: int,
         user_message: str = "",
+        start_time: Optional[str] = None,
         max_players: int = 5,
         ttl_hours: float = 6,
         created_at: Optional[datetime] = None,
@@ -34,6 +35,7 @@ class FlexView(discord.ui.View):
         self.creator_id = creator_id
         self.role_id = role_id
         self.user_message = user_message or ""
+        self.start_time = start_time or None
         self.max_players = max_players
         self.participant_ids: list[int] = [creator_id]
         self.created_at = created_at or utcnow()
@@ -74,6 +76,7 @@ class FlexView(discord.ui.View):
             "creator_id": self.creator_id,
             "role_id": self.role_id,
             "user_message": self.user_message,
+            "start_time": self.start_time,
             "max_players": self.max_players,
             "participants": list(self.participant_ids),
             "created_at": self.created_at.isoformat(),
@@ -87,6 +90,7 @@ class FlexView(discord.ui.View):
             creator_id=data["creator_id"],
             role_id=data["role_id"],
             user_message=data.get("user_message", ""),
+            start_time=data.get("start_time"),
             max_players=data.get("max_players", 5),
             created_at=datetime.fromisoformat(data["created_at"]),
             expires_at=datetime.fromisoformat(data["expires_at"]),
@@ -121,9 +125,15 @@ class FlexView(discord.ui.View):
             or "_Personne pour l'instant._"
         )
 
+        description_lines = []
+        if self.user_message:
+            description_lines.append(self.user_message)
+        if self.start_time:
+            description_lines.append(f"🕘 **Heure : {self.start_time}**")
+
         embed = discord.Embed(
             title="🎮 C'est l'heure de FLEX",
-            description=self.user_message or None,
+            description="\n".join(description_lines) or None,
             color=color,
         )
         embed.add_field(name="Organisé par", value=f"<@{self.creator_id}>", inline=True)
